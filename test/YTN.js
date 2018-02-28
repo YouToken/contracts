@@ -43,8 +43,8 @@ contract('YTN', accounts => {
   it('hold account', async function () {
     let holder = accounts[1]
     let balance = new BigNumber(10 ** 20)
-    let timeToHold = latestTime() + 1
-    let timeToUnhold = timeToHold + 1
+    let timeToHold = latestTime() + 100
+    let timeToUnhold = timeToHold + 100
 
     await this.token.mint(holder, balance)
     await this.token.hold(holder, timeToHold)
@@ -55,5 +55,23 @@ contract('YTN', accounts => {
 
     await increaseTimeTo(timeToUnhold)
     await this.token.unhold(holder).should.be.fulfilled
+  })
+
+  it('allow transfer', async function () {
+    let bounty = accounts[2]
+    let to = accounts[3]
+    let tokenAmount = new BigNumber(10 ** 20)
+
+    await this.token.mint(bounty, tokenAmount)
+    await this.token.pause()
+
+    await this.token.transfer(to, tokenAmount, {from: bounty})
+      .should.be.rejectedWith(EVMRevert)
+
+    await this.token.addAllowTransfer(bounty)
+    await this.token.transfer(to, tokenAmount, {from: bounty})
+      .should.be.fulfilled
+    let balance = await this.token.balanceOf(to)
+    balance.should.be.bignumber.equal(tokenAmount)
   })
 })

@@ -1,18 +1,18 @@
 pragma solidity ^0.4.18;
 
-import 'zeppelin-solidity/contracts/token/ERC20/PausableToken.sol';
 import './IEventListener.sol';
-import './MultiOwnable.sol';
+import 'zeppelin-solidity/contracts/token/ERC20/PausableToken.sol';
 
-contract Holdable is MultiOwnable, PausableToken {
+contract Holdable is PausableToken {
     mapping(address => uint256) holders;
+    mapping(address => bool) allowTransfer;
 
     IEventListener public listener;
 
     event Hold(address holder, uint256 expired);
     event Unhold(address holder);
 
-    function hold(address _holder, uint256 _expired) public onlyCreator {
+    function hold(address _holder, uint256 _expired) public onlyOwner {
         holders[_holder] = _expired;
         Hold(_holder, _expired);
     }
@@ -34,8 +34,16 @@ contract Holdable is MultiOwnable, PausableToken {
         Unhold(_holder);
     }
 
+    function addAllowTransfer(address _holder) public onlyOwner {
+        allowTransfer[_holder] = true;
+    }
+
+    function isAllowTransfer(address _holder) public view returns(bool) {
+        return allowTransfer[_holder] || (!paused && block.timestamp >= holders[_holder]);
+    }
+
     modifier whenNotPaused() {
-        require(!paused && block.timestamp >= holders[msg.sender]);
+        require(isAllowTransfer(msg.sender));
         _;
     }
 

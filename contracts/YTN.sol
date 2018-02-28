@@ -8,7 +8,8 @@ import './token/Holdable.sol';
 
 contract YTN is Holdable, MintableToken, BurnableToken {
     using SafeMath for uint256;
-    enum States {PreOrder, ProofOfConcept, ProofOfConceptEnd, DAICO, Final}
+
+    enum States {PreOrder, ProofOfConcept, DAICO, Final}
     States public state;
 
     string public symbol = 'YTN';
@@ -32,19 +33,15 @@ contract YTN is Holdable, MintableToken, BurnableToken {
     }
 
     function setState(uint _state) public onlyOwner {
-        require(uint(state) <= _state && uint(States.Final) >= _state);
+        require(uint(state) < _state && uint(States.Final) >= _state);
         state = States(_state);
 
         if (state == States.PreOrder || state == States.ProofOfConcept) {
             cap = proofOfConceptCap;
         }
 
-        if(state == States.ProofOfConceptEnd) {
-            unpause();
-        }
-
         if (state == States.DAICO) {
-            cap = DAICOCap;
+            cap = DAICOCap + totalSupply_;
             pause();
         }
 

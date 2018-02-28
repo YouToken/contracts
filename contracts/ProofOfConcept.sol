@@ -32,4 +32,9 @@ contract ProofOfConcept is RefundableCrowdsale, MintedCrowdsale{
 
         return _weiAmount.mul(rate).add(bonus);
     }
+
+    function finalization() internal {
+        super.finalization();
+        YTN(token).transferOwnership(owner);
+    }
 }
