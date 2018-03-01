@@ -33,7 +33,7 @@ contract YTN is Holdable, MintableToken, BurnableToken {
     }
 
     function setState(uint _state) public onlyOwner {
-        require(uint(state) < _state && uint(States.Final) >= _state);
+        require(uint(state) <= _state && uint(States.Final) >= _state);
         state = States(_state);
 
         if (state == States.PreOrder || state == States.ProofOfConcept) {

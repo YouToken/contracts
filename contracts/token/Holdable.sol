@@ -51,7 +51,7 @@ contract Holdable is PausableToken {
         listener = IEventListener(_listener);
     }
 
-    function isListener() internal returns(bool) {
+    function isListener() internal view returns(bool) {
         return listener != address(0);
     }
 

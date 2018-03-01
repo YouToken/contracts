@@ -74,4 +74,15 @@ contract('YTN', accounts => {
     let balance = await this.token.balanceOf(to)
     balance.should.be.bignumber.equal(tokenAmount)
   })
+
+  it('State', async function () {
+    await this.token.setState(2)
+
+    let cap = await this.token.cap()
+    cap.should.be.bignumber.equal(DAICOCap)
+
+    await this.token.setState(3)
+    let finished = await this.token.mintingFinished()
+    finished.should.be.equal(true)
+  })
 })
