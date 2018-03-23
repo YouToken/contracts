@@ -22,10 +22,10 @@ function getFile(fileName, rel) {
     path = rel + fileName
   }
 
-  let content = fs.readFileSync(path).toString()
+  let content = fs.readFileSync(path).toString();
   content = content.replace(rxImport, (m, p1) => {
     return getFile(p1, path.replace(rxName, '')).content.replace(rxRemove, '')
-  })
+  });
 
   imported[name] = {
     content, fileName, name
@@ -34,4 +34,6 @@ function getFile(fileName, rel) {
   return imported[name]
 }
 
-console.log(getFile('./YTN.sol', filePath).content.replace(/\n+/g, '\n'))
+module.exports = (contract) => {
+  return getFile('./' + contract, filePath).content.replace(/\n+/g, '\n');
+};
