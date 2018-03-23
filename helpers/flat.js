@@ -1,8 +1,8 @@
 const fs = require('fs');
 
-const base = require('app-root-dir').get();
+const base = __dirname + '/../';
 const filePath = base + '/contracts/';
-const node = base + '/node_modules/';
+const node = require('app-root-dir').get() + '/node_modules/';
 
 const rxImport = /import ['"](.*?)['"];/gi;
 const rxName = /\w*\.sol$/;
