@@ -1,6 +1,6 @@
 const fs = require('fs');
 
-const base = __dirname + '/../';
+const base = require('app-root-dir').get();
 const filePath = base + '/contracts/';
 const node = base + '/node_modules/';
 
