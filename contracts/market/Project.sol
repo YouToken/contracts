@@ -8,6 +8,7 @@ import './Vault.sol';
 contract Project is Ownable, MintedCrowdsale, TimedCrowdsale {
     enum States {Funding, Production, Existence, Refunding}
     States public state;
+
     event StateChanged(States previos, States current);
 
     // minimum amount of funds to be raised in weis
@@ -21,6 +22,13 @@ contract Project is Ownable, MintedCrowdsale, TimedCrowdsale {
         vault = new Vault(_wallet);
         goal = _goal;
         state = States.Funding;
+    }
+
+    /**
+   * @dev Determines how ETH is stored/forwarded on purchases.
+   */
+    function _forwardFunds() internal {
+        vault.deposit.value(msg.value)(msg.sender);
     }
 
     /**
@@ -49,6 +57,8 @@ contract Project is Ownable, MintedCrowdsale, TimedCrowdsale {
         }
 
         setState(_state);
+
+        //TODO burn tokens
     }
 
     function setState(States _state) internal {
@@ -60,6 +70,5 @@ contract Project is Ownable, MintedCrowdsale, TimedCrowdsale {
 
         StateChanged(state, _state);
         state = _state;
-        //TODO change token ownership after end
     }
 }

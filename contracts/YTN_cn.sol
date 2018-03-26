@@ -1,9 +1,9 @@
 pragma solidity ^0.4.18;
 
-import 'zeppelin-solidity/contracts/token/ERC827/ERC827Token.sol';
 import 'zeppelin-solidity/contracts/token/ERC20/CappedToken.sol';
+import 'zeppelin-solidity/contracts/token/ERC20/BurnableToken.sol';
 
-contract YTN_cn is CappedToken, ERC827Token {
+contract YTN_cn is CappedToken, BurnableToken {
     string public name;
     string public symbol;
     uint256 public decimals = 18;

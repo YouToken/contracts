@@ -73,6 +73,7 @@ contract('Donation', accounts => {
     await this.project.executeProposal(id).should.be.rejected
     await increaseTimeTo(latestTime() + duration.days(2))
     await this.project.executeProposal(id).should.be.fulfilled
+    //TODO check fill to wallet
     return await this.project.currentStepId.call()
   }
 

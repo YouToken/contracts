@@ -2,14 +2,10 @@ pragma solidity ^0.4.18;
 
 import 'zeppelin-solidity/contracts/token/ERC20/ERC20.sol';
 import './market/Stepable.sol';
-import './market/Project.sol';
 
 contract Donation is Stepable {
 
     string public name;
-    string public tokenName;
-    string public tokenSymbol;
-
 
     function Donation(
         string _name,
@@ -25,7 +21,5 @@ contract Donation is Stepable {
     Project(_wallet, _goal)
     {
         name = _name;
-//        tokenName = token.name();
-//        tokenSymbol = token.symbol();
     }
 }
