@@ -2,15 +2,13 @@ const fs = require('fs');
 
 const base = __dirname + '/../';
 const filePath = base + '/contracts/';
-const node = base + '/node_modules/';
+const node = require('app-root-dir').get() + '/node_modules/';
 
 const rxImport = /import ['"](.*?)['"];/gi;
 const rxName = /\w*\.sol$/;
 const rxRemove = /pragma solidity .*?;/;
 
-let imported = {};
-
-function getFile(fileName, rel) {
+function getFile(fileName, rel, imported) {
   let name = fileName.match(rxName)[0];
   if (imported[name]) {
     return {
@@ -22,10 +20,10 @@ function getFile(fileName, rel) {
     path = rel + fileName
   }
 
-  let content = fs.readFileSync(path).toString()
+  let content = fs.readFileSync(path).toString();
   content = content.replace(rxImport, (m, p1) => {
-    return getFile(p1, path.replace(rxName, '')).content.replace(rxRemove, '')
-  })
+    return getFile(p1, path.replace(rxName, ''), imported).content.replace(rxRemove, '')
+  });
 
   imported[name] = {
     content, fileName, name
@@ -34,4 +32,6 @@ function getFile(fileName, rel) {
   return imported[name]
 }
 
-console.log(getFile('./YTN.sol', filePath).content.replace(/\n+/g, '\n'))
+module.exports = (contract) => {
+  return getFile('./' + contract, filePath, {}).content.replace(/\n+/g, '\n');
+};
