@@ -5,8 +5,6 @@ import './market/Stepable.sol';
 
 contract Donation is Stepable {
 
-    string public name;
-
     function Donation(
         string _name,
         uint256 _rate,
@@ -18,8 +16,7 @@ contract Donation is Stepable {
     ) public
     Crowdsale(_rate, _wallet, _token)
     TimedCrowdsale(_openingTime, _closingTime)
-    Project(_wallet, _goal)
+    Project(_name, _wallet, _goal)
     {
-        name = _name;
     }
 }

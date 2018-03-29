@@ -1,7 +1,6 @@
 import {advanceBlock} from 'zeppelin-solidity/test/helpers/advanceToBlock'
-import {increaseTimeTo, duration} from 'zeppelin-solidity/test/helpers/increaseTime'
+import {duration, increaseTimeTo} from 'zeppelin-solidity/test/helpers/increaseTime'
 import latestTime from 'zeppelin-solidity/test/helpers/latestTime'
-import EVMRevert from 'zeppelin-solidity/test/helpers/EVMRevert'
 import ether from 'zeppelin-solidity/test/helpers/ether'
 import BigNumber from 'bignumber.js'
 
@@ -11,13 +10,16 @@ require('chai')
   .use(require('chai-bignumber')(web3.BigNumber))
   .should();
 
-const Donation = artifacts.require('Donation')
+const Debt = artifacts.require('Debt')
 const YTN_cn = artifacts.require('YTN_cn')
+const Bucket = artifacts.require('DebtBucketOnce')
+const DebtToken = artifacts.require('DebtToken')
 
-contract('Donation', accounts => {
+contract('Debt', accounts => {
   const TokenCap = 10 ** 27
   const Rate = 100000
   const Goal = ether(1)
+  const DebtRewardPercent = 110;
   const investor1 = accounts[1]
   const investor2 = accounts[2]
   let StartTime, EndTime
@@ -29,20 +31,18 @@ contract('Donation', accounts => {
     EndTime = StartTime + duration.days(30)
 
     this.token = await YTN_cn.new('YTN_petya', 'YTN_PTA', TokenCap)
-    this.project = await Donation.new(
+    this.project = await Debt.new(
       'SpaceX',
       Rate,
       accounts[0],
-      // accounts[0],
       this.token.address,
       StartTime,
       EndTime,
-      Goal)
+      Goal,
+      DebtRewardPercent,
+      false
+      )
     await this.token.mint(this.project.address, Goal.mul(Rate).mul(1.1))
-  })
-
-  beforeEach(async function () {
-
   })
 
   describe('Funding', async function () {
@@ -108,4 +108,29 @@ contract('Donation', accounts => {
     })
 
   })
+
+  describe('Existence', async function () {
+
+    const filling = ether(1)
+
+    before(async function () {
+      this.bucket = await Bucket.at(await this.project.bucket.call())
+      this.debtToken = await DebtToken.at(await this.project.debtToken.call())
+    })
+
+    it('fill bucket', async function () {
+      await this.bucket.sendTransaction({value: filling})
+      let balance = web3.eth.getBalance(this.bucket.address)
+      balance.should.bignumber.equal(filling)
+    })
+
+    it('get rewards', async function () {
+      let weiRaised = await this.project.weiRaised.call()
+      await this.bucket.sendTransaction({value: weiRaised.mul(DebtRewardPercent).div(100)})
+      await this.project.getReward({from: investor2})
+      let debtTokenBalance = await this.debtToken.balanceOf.call(investor2)
+      debtTokenBalance.should.bignumber.equal(0)
+    })
+  })
+
 })

@@ -2,6 +2,7 @@ pragma solidity ^0.4.18;
 
 import 'zeppelin-solidity/contracts/token/ERC20/CappedToken.sol';
 import 'zeppelin-solidity/contracts/token/ERC20/BurnableToken.sol';
+import './token/
 
 contract YTN_cn is CappedToken, BurnableToken {
     string public name;

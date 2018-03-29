@@ -1,8 +1,9 @@
 pragma solidity ^0.4.18;
 
 import 'zeppelin-solidity/contracts/token/ERC20/ERC20.sol';
+import 'zeppelin-solidity/contracts/ownership/Ownable.sol';
 
-contract Bucket {
+contract Bucket is Ownable {
 
     event AddHolder(address holder);
     event Refill(address from, uint256 amount);
@@ -18,6 +19,10 @@ contract Bucket {
     }
 
     function() public payable {
+        refill();
+    }
+
+    function refill() public payable {
         Refill(msg.sender, msg.value);
     }
 

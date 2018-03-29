@@ -19,7 +19,7 @@ contract RevShare is Stepable {
     ) public
     Crowdsale(_rate, _wallet, _token)
     TimedCrowdsale(_openingTime, _closingTime)
-    Project(_wallet, _goal) {
+    Project(_name, _wallet, _goal) {
         bucket = new CircleBucket(token, _roundDuration);
     }
 
