@@ -51,7 +51,7 @@ contract Bucket is Ownable {
         return true;
     }
 
-    function getReward() external onlyHolder(msg.sender) {
+    function getReward(address holder) external onlyOwner {
         //Override this method in implementations
     }
 }

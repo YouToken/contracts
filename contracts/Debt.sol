@@ -53,7 +53,7 @@ contract Debt is Stepable {
         bucket.addBeneficiary(_beneficiary);
     }
 
-    function getReward() {
+    function getReward() external {
         bucket.getReward(msg.sender);
         debtToken.burn(msg.sender);
     }

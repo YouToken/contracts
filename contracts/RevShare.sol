@@ -39,4 +39,8 @@ contract RevShare is Stepable {
         super._postValidatePurchase(_beneficiary, _weiAmount);
         bucket.addBeneficiary(_beneficiary);
     }
+
+    function getReward() external {
+        bucket.getReward(msg.sender);
+    }
 }

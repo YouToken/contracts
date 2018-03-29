@@ -36,10 +36,9 @@ contract CircleBucket is Bucket {
         _;
     }
 
-    function getReward() external isStarted {
+    function getReward(address holder) external isStarted onlyOwner {
         require(roundBalance > 0);
 
-        address holder = msg.sender;
         uint256 holderBalance = roundBalances[holder];
 
         //double spending

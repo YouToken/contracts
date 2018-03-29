@@ -8,7 +8,7 @@ contract DebtToken is MintableToken {
 
     event Burn(address indexed burner, uint256 value);
 
-    function DebtToken(bool _allowTransfer){
+    function DebtToken(bool _allowTransfer) public {
         allowTransfer = _allowTransfer;
     }
 

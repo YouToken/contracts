@@ -70,10 +70,6 @@ contract DebtBucketOnce is Bucket {
         }
     }
 
-    function getReward() external {
-        revert();
-    }
-
     function getReward(address holder) external isRewarding onlyOwner {
         uint256 holderBalance = holderBalances[holder];
 

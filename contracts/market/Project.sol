@@ -4,8 +4,8 @@ import 'zeppelin-solidity/contracts/crowdsale/validation/TimedCrowdsale.sol';
 import 'zeppelin-solidity/contracts/ownership/Ownable.sol';
 import './Vault.sol';
 
-contract iYTN_CN {
-    function burn(uint _amount) public {}
+interface iYTN_CN {
+    function burn(uint _amount) public;
 }
 
 contract Project is Ownable, TimedCrowdsale {

@@ -130,7 +130,7 @@ contract('RevShare', accounts => {
       await this.bucket.nextRound()
 
       let balance = web3.eth.getBalance(investor2)
-      await this.bucket.getReward({from: investor2})
+      await this.project.getReward({from: investor2})
       web3.fromWei(web3.eth.getBalance(investor2).sub(balance)).should.bignumber.gt(0)
 
       let rewardBalance = await this.bucket.roundBalances.call(investor2)
