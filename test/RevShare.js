@@ -38,6 +38,7 @@ contract('RevShare', accounts => {
       EndTime,
       Goal,
       duration.weeks(4))
+    await this.token.addListener(this.project.address)
     await this.token.mint(this.project.address, Goal.mul(Rate).mul(1.1))
   })
 

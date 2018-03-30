@@ -3,7 +3,7 @@ pragma solidity ^0.4.18;
 import './IEventListener.sol';
 import 'zeppelin-solidity/contracts/token/ERC20/MintableToken.sol';
 
-contract EventToken is MintableToken, IEventListener {
+contract EventToken is MintableToken {
     mapping(address => bool) addedListeners;
     IEventListener[] listeners;
 
@@ -26,7 +26,7 @@ contract EventToken is MintableToken, IEventListener {
         if (listeners.length == 0) return;
 
         for (uint256 i = 0; i < listeners.length; i++) {
-            listeners[i].onTokenTransfer(from, to, value);
+            listeners[i].onTokenApproval(from, to, value);
         }
     }
 
