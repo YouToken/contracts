@@ -1,7 +1,8 @@
 const fs = require('fs');
+const ps = require('path');
 
 const base = __dirname + '/../';
-const filePath = base + '/contracts/';
+const filePath = base + 'contracts/';
 const node = require('app-root-dir').get() + '/node_modules/';
 
 const rxImport = /import ['"](.*?)['"];/gi;
@@ -15,9 +16,9 @@ function getFile(fileName, rel, imported) {
       content: ''
     };
   }
-  let path = node + fileName;
+  let path = ps.join(node, fileName);
   if (fileName[0] === '.') {
-    path = rel + fileName
+    path = ps.join(rel, fileName)
   }
 
   let content = fs.readFileSync(path).toString();

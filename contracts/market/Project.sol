@@ -1,11 +1,14 @@
 pragma solidity ^0.4.18;
 
-import 'zeppelin-solidity/contracts/crowdsale/emission/MintedCrowdsale.sol';
 import 'zeppelin-solidity/contracts/crowdsale/validation/TimedCrowdsale.sol';
 import 'zeppelin-solidity/contracts/ownership/Ownable.sol';
 import './Vault.sol';
 
-contract Project is Ownable, MintedCrowdsale, TimedCrowdsale {
+interface iYTN_CN {
+    function burn(uint _amount) public;
+}
+
+contract Project is Ownable, TimedCrowdsale {
     enum States {Funding, Production, Existence, Refunding}
     States public state;
 
@@ -14,11 +17,14 @@ contract Project is Ownable, MintedCrowdsale, TimedCrowdsale {
     // minimum amount of funds to be raised in weis
     uint256 public goal;
 
+    string public name;
+
     Vault vault;
 
-    function Project(address _wallet, uint256 _goal) public {
+    function Project(string _name, address _wallet, uint256 _goal) public {
         require(_goal > 0);
 
+        name = _name;
         vault = new Vault(_wallet);
         goal = _goal;
         state = States.Funding;
@@ -58,7 +64,7 @@ contract Project is Ownable, MintedCrowdsale, TimedCrowdsale {
 
         setState(_state);
 
-        //TODO burn tokens
+        iYTN_CN(token).burn(token.balanceOf(this));
     }
 
     function setState(States _state) internal {

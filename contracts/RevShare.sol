@@ -2,8 +2,9 @@ pragma solidity ^0.4.18;
 
 import './market/Stepable.sol';
 import './market/bucket/CircleBucket.sol';
+import './token/IEventListener.sol';
 
-contract RevShare is Stepable {
+contract RevShare is Stepable, IEventListener {
 
     CircleBucket public bucket;
 
@@ -19,7 +20,7 @@ contract RevShare is Stepable {
     ) public
     Crowdsale(_rate, _wallet, _token)
     TimedCrowdsale(_openingTime, _closingTime)
-    Project(_wallet, _goal) {
+    Project(_name, _wallet, _goal) {
         bucket = new CircleBucket(token, _roundDuration);
     }
 
@@ -35,8 +36,16 @@ contract RevShare is Stepable {
         bucket.startFirstRound();
     }
 
-    function _postValidatePurchase(address _beneficiary, uint256 _weiAmount) internal {
-        super._postValidatePurchase(_beneficiary, _weiAmount);
-        bucket.addBeneficiary(_beneficiary);
+    function onTokenTransfer(address _from, address _to, uint256 _value) external {
+        require(msg.sender == address(token));
+        bucket.addBeneficiary(_to);
+    }
+
+    function onTokenApproval(address _from, address _to, uint256 _value) external {
+        //nope
+    }
+
+    function getReward() external {
+        bucket.getReward(msg.sender);
     }
 }

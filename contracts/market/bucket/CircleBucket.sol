@@ -1,14 +1,12 @@
 pragma solidity ^0.4.18;
 
 import 'zeppelin-solidity/contracts/math/SafeMath.sol';
-import 'zeppelin-solidity/contracts/ownership/Ownable.sol';
 import './Bucket.sol';
 
-contract CircleBucket is Bucket, Ownable {
+contract CircleBucket is Bucket {
     using SafeMath for uint256;
 
     event NewRewardRound(uint256 balance);
-    event Reward(address holder, uint256 amount);
 
     uint256 public roundDuration;//in sec
     bool public started;
@@ -28,7 +26,7 @@ contract CircleBucket is Bucket, Ownable {
         roundDuration = _roundDuration;
     }
 
-    function startFirstRound() onlyOwner {
+    function startFirstRound() external onlyOwner {
         roundStartTime = now;
         started = true;
     }
@@ -38,10 +36,9 @@ contract CircleBucket is Bucket, Ownable {
         _;
     }
 
-    function getReward() external isStarted {
+    function getReward(address holder) external isStarted onlyOwner {
         require(roundBalance > 0);
 
-        address holder = msg.sender;
         uint256 holderBalance = roundBalances[holder];
 
         //double spending

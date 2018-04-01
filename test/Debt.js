@@ -10,14 +10,16 @@ require('chai')
   .use(require('chai-bignumber')(web3.BigNumber))
   .should();
 
-const RevShare = artifacts.require('RevShare')
+const Debt = artifacts.require('Debt')
 const YTN_cn = artifacts.require('YTN_cn')
-const Bucket = artifacts.require('CircleBucket')
+const Bucket = artifacts.require('DebtBucketOnce')
+const DebtToken = artifacts.require('DebtToken')
 
-contract('RevShare', accounts => {
+contract('Debt', accounts => {
   const TokenCap = 10 ** 27
   const Rate = 100000
   const Goal = ether(1)
+  const DebtRewardPercent = 110;
   const investor1 = accounts[1]
   const investor2 = accounts[2]
   let StartTime, EndTime
@@ -29,7 +31,7 @@ contract('RevShare', accounts => {
     EndTime = StartTime + duration.days(30)
 
     this.token = await YTN_cn.new('YTN_petya', 'YTN_PTA', TokenCap)
-    this.project = await RevShare.new(
+    this.project = await Debt.new(
       'SpaceX',
       Rate,
       accounts[0],
@@ -37,13 +39,10 @@ contract('RevShare', accounts => {
       StartTime,
       EndTime,
       Goal,
-      duration.weeks(4))
-    await this.token.addListener(this.project.address)
+      DebtRewardPercent,
+      false
+      )
     await this.token.mint(this.project.address, Goal.mul(Rate).mul(1.1))
-  })
-
-  beforeEach(async function () {
-
   })
 
   describe('Funding', async function () {
@@ -116,7 +115,7 @@ contract('RevShare', accounts => {
 
     before(async function () {
       this.bucket = await Bucket.at(await this.project.bucket.call())
-      this.roundDuration = await this.bucket.roundDuration.call()
+      this.debtToken = await DebtToken.at(await this.project.debtToken.call())
     })
 
     it('fill bucket', async function () {
@@ -125,17 +124,12 @@ contract('RevShare', accounts => {
       balance.should.bignumber.equal(filling)
     })
 
-    it('start next round and reward from current', async function () {
-      await this.bucket.nextRound().should.be.rejected
-      await increaseTimeTo(latestTime() + this.roundDuration.toNumber() + 100)
-      await this.bucket.nextRound()
-
-      let balance = web3.eth.getBalance(investor2)
+    it('get rewards', async function () {
+      let weiRaised = await this.project.weiRaised.call()
+      await this.bucket.sendTransaction({value: weiRaised.mul(DebtRewardPercent).div(100)})
       await this.project.getReward({from: investor2})
-      web3.fromWei(web3.eth.getBalance(investor2).sub(balance)).should.bignumber.gt(0)
-
-      let rewardBalance = await this.bucket.roundBalances.call(investor2)
-      rewardBalance.should.bignumber.equal(0)
+      let debtTokenBalance = await this.debtToken.balanceOf.call(investor2)
+      debtTokenBalance.should.bignumber.equal(0)
     })
   })
 
