@@ -4,7 +4,8 @@
   "scripts": {
     "testrpc": "testrpc",
     "dev": "truffle develop",
-    "test": "truffle test"
+    "test": "truffle test",
+    "postversion": "git push origin master && git push --tags"
   },
   "keywords": [],
   "author": "",
