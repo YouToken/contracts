@@ -19,6 +19,9 @@ contract Project is Ownable, TimedCrowdsale {
 
     string public name;
 
+    uint256 public backersCount;
+    uint256 public tokenSold;
+
     Vault vault;
 
     function Project(string _name, address _wallet, uint256 _goal) public {
@@ -76,5 +79,11 @@ contract Project is Ownable, TimedCrowdsale {
 
         StateChanged(state, _state);
         state = _state;
+    }
+
+    function _processPurchase(address _beneficiary, uint256 _tokenAmount) internal {
+        super._deliverTokens(_beneficiary, _tokenAmount);
+        backersCount = backersCount.add(1);
+        tokenSold = tokenSold.add(_tokenAmount);
     }
 }
