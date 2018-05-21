@@ -135,6 +135,7 @@ contract Stepable is Project {
         }
 
         proposal.executed = true;
+        //TODO change condition of VOTING_MIN_QUORUM
         proposal.agreed = yes > no && yes.add(no) > VOTING_MIN_QUORUM;
 
         if (proposal.proposalType == ProposalTypes.Confirm) {
