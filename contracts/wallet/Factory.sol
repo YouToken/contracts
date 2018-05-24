@@ -1,4 +1,4 @@
-pragma solidity ^0.4.15;
+pragma solidity ^0.4.18;
 
 contract Factory {
 
@@ -16,10 +16,9 @@ contract Factory {
     /*
      * Public functions
      */
-    /// @dev Returns number of instantiations by creator.
-    /// @param creator Contract creator.
-    /// @return Returns number of instantiations by creator.
-    function getInstantiationCount(address creator)
+    /// @dev Returns number of instantiations.
+    /// @return Returns number of instantiations.
+    function getInstantiationCount()
     public
     constant
     returns (uint)

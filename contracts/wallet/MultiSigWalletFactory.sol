@@ -1,4 +1,4 @@
-pragma solidity ^0.4.15;
+pragma solidity ^0.4.18;
 
 import "./Factory.sol";
 import "./MultiSigWallet.sol";
@@ -22,7 +22,6 @@ contract MultiSigWalletFactory is Ownable, Factory {
     onlyOwner
     returns (address wallet)
     {
-        _owners.push(this);
         wallet = new MultiSigWallet(_owners, _required);
         register(wallet);
     }
