@@ -34,12 +34,18 @@ contract('MultiSigWallet', accounts => {
 
     it('add', async function () {
       let owners = await this.MultiSigWallet.getOwners()
-      owners.length.should.bignumber.equal(3)
+      let length = owners.length
+      await this.MultiSigWallet.addOwner(accounts[accounts.length - 1])
+      owners = await this.MultiSigWallet.getOwners()
+      owners.length.should.bignumber.equal(length + 1)
     })
 
     it('remove', async function () {
       let owners = await this.MultiSigWallet.getOwners()
-      owners.length.should.bignumber.equal(3)
+      let length = owners.length
+      await this.MultiSigWallet.removeOwner(owners[0])
+      owners = await this.MultiSigWallet.getOwners()
+      owners.length.should.bignumber.equal(length - 1)
     })
   })
 
