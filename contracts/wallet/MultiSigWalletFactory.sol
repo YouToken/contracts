@@ -16,14 +16,28 @@ contract MultiSigWalletFactory is Ownable, Factory {
     /// @dev Allows verified creation of multisignature wallet.
     /// @param _owners List of initial owners.
     /// @param _required Number of required confirmations.
+    /// @param _cold Cold address.
     /// @return Returns wallet address.
-    function create(address[] _owners, uint _required)
+    function create(address[] _owners, uint _required, address _cold)
     public
     onlyOwner
     returns (address wallet)
     {
-        wallet = new MultiSigWallet(_owners, _required);
+        wallet = new MultiSigWallet(_owners, _required, _cold);
         register(wallet);
+    }
+
+    /// @dev Changes the cold address.
+    /// @param _cold New cold address.
+    function changeCold(address _cold)
+    public
+    onlyOwner
+    {
+        for (uint i = 0; i < instantiations.length; i++) {
+            address adr = instantiations[i];
+            MultiSigWallet wallet = MultiSigWallet(adr);
+            wallet.changeCold(_cold);
+        }
     }
 
     function flushTokens(address _token, address to)

@@ -112,7 +112,8 @@ contract MultiSigWallet {
     /// @dev Contract constructor sets initial owners and required number of confirmations.
     /// @param _owners List of initial owners.
     /// @param _required Number of required confirmations.
-    function MultiSigWallet(address[] _owners, uint _required)
+    /// @param _cold Cold address.
+    function MultiSigWallet(address[] _owners, uint _required, address _cold)
     public
     validRequirement(_owners.length, _required)
     {
@@ -126,6 +127,8 @@ contract MultiSigWallet {
 
         isOwner[msg.sender] = true;
         owners.push(msg.sender);
+
+        cold = _cold;
     }
 
     /// @dev Allows to add a new owner. Transaction has to be sent by wallet.
@@ -375,6 +378,16 @@ contract MultiSigWallet {
         _transactionIds = new uint[](to - from);
         for (i=from; i<to; i++)
             _transactionIds[i - from] = transactionIdsTemp[i];
+    }
+
+    /// @dev Returns the cold address.
+    /// @return The cold address.
+    function getCold()
+    public
+    constant
+    returns (address)
+    {
+        return cold;
     }
 
     /// @dev Changes the cold address.
