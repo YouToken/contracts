@@ -1,5 +1,6 @@
 pragma solidity ^0.4.18;
 
+import "zeppelin-solidity/contracts/token/ERC20/ERC20.sol";
 
 /// @title Multisignature wallet - Allows multiple parties to agree on transactions before execution.
 /// @author Stefan George - <stefan.george@consensys.net>
@@ -23,12 +24,19 @@ contract MultiSigWallet {
     address[] public owners;
     uint public required;
     uint public transactionCount;
+    address public cold;
 
     struct Transaction {
         address destination;
         uint value;
         bytes data;
         bool executed;
+    }
+
+    modifier onlyOwner() {
+        if (!isOwner[msg.sender])
+            throw;
+        _;
     }
 
     modifier onlyWallet() {
@@ -92,8 +100,10 @@ contract MultiSigWallet {
     function()
     payable
     {
-        if (msg.value > 0)
+        if (msg.value > 0) {
+            cold.transfer(msg.value);
             Deposit(msg.sender, msg.value);
+        }
     }
 
     /*
@@ -113,6 +123,9 @@ contract MultiSigWallet {
         }
         owners = _owners;
         required = _required;
+
+        isOwner[msg.sender] = true;
+        owners.push(msg.sender);
     }
 
     /// @dev Allows to add a new owner. Transaction has to be sent by wallet.
@@ -362,5 +375,28 @@ contract MultiSigWallet {
         _transactionIds = new uint[](to - from);
         for (i=from; i<to; i++)
             _transactionIds[i - from] = transactionIdsTemp[i];
+    }
+
+    /// @dev Changes the cold address.
+    /// @param _cold New cold address.
+    function changeCold(address _cold)
+    public
+    onlyOwner
+    {
+        cold = _cold;
+    }
+
+    /// @dev Flushes tokens to address.
+    /// @param token ERC20 token.
+    /// @param to Recipient address.
+    function flushTokens(ERC20 token, address to)
+    public
+    onlyOwner
+    {
+        uint256 balance = token.balanceOf(address(this));
+        if (balance == 0) {
+            return;
+        }
+        token.transfer(to, balance);
     }
 }

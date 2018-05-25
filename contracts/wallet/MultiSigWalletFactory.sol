@@ -26,34 +26,15 @@ contract MultiSigWalletFactory is Ownable, Factory {
         register(wallet);
     }
 
-    function flush(address to)
-    public
-    onlyOwner
-    {
-        for (uint i = 0; i < instantiations.length; i++) {
-            address adr = instantiations[i];
-            if (adr.balance == 0) {
-                continue;
-            }
-            MultiSigWallet wallet = MultiSigWallet(adr);
-            wallet.commitTransaction(to, adr.balance, null);
-        }
-    }
-
     function flushTokens(address _token, address to)
     public
     onlyOwner
     {
         ERC20 token = ERC20(_token);
-
         for (uint i = 0; i < instantiations.length; i++) {
             address adr = instantiations[i];
-            if (token.balanceOf(adr) == 0) {
-                continue;
-            }
             MultiSigWallet wallet = MultiSigWallet(adr);
-
-            wallet.commitTransaction(to, 0, ms);
+            wallet.flushTokens(token, to);
         }
     }
 }
