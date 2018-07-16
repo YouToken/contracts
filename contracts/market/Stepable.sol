@@ -1,4 +1,4 @@
-pragma solidity ^0.4.18;
+pragma solidity ^0.4.23;
 
 import './Project.sol';
 
@@ -23,7 +23,6 @@ contract Stepable is Project {
     uint256 public stepLength;
     uint256 public currentStepId;
 
-    uint256 public VOTING_MIN_QUORUM = 3;//percent
     uint256 public VOTING_DURATION = 60 * 60 * 24;//in sec
 
     enum ProposalTypes {Confirm, Edit}
@@ -47,7 +46,7 @@ contract Stepable is Project {
 
     event ProposalAdded(uint proposalId, uint proposalType, uint stepId);
     event Voted(uint proposalId, bool agree, address voter);
-    event ProposalFinalized(uint proposalId, uint result, uint quorum, bool active);
+    event ProposalFinalized(uint proposalId, uint quorum, bool aggreed);
 
     struct Vote {
         bool agreed;
@@ -87,7 +86,7 @@ contract Stepable is Project {
         proposal.votes[voteId] = Vote({agreed : agreed, voter : voter});
         proposal.voted[voter] = true;
 
-        Voted(proposalId, agreed, voter);
+        emit Voted(proposalId, agreed, voter);
 
         return voteId;
     }
@@ -106,7 +105,7 @@ contract Stepable is Project {
         p.proposalType = ProposalTypes(proposalType);
         p.stepId = stepId;
 
-        ProposalAdded(proposalID, proposalType, stepId);
+        emit ProposalAdded(proposalID, proposalType, stepId);
 
         return proposalID;
     }
@@ -125,9 +124,9 @@ contract Stepable is Project {
         uint256 no = 0;
 
         for (uint i = 0; i < proposal.votes.length; i++) {
-            Vote storage vote = proposal.votes[i];
-            uint256 amount = token.balanceOf(vote.voter);
-            if (vote.agreed) {
+            Vote storage vot = proposal.votes[i];
+            uint256 amount = token.balanceOf(vot.voter);
+            if (vot.agreed) {
                 yes = yes.add(amount);
             } else {
                 no = no.add(amount);
@@ -135,14 +134,15 @@ contract Stepable is Project {
         }
 
         proposal.executed = true;
-        //TODO change condition of VOTING_MIN_QUORUM
-        proposal.agreed = yes > no && yes.add(no) > VOTING_MIN_QUORUM;
+        proposal.agreed = yes > no;
 
         if (proposal.proposalType == ProposalTypes.Confirm) {
             closeStep(proposal.stepId, proposal.agreed);
         } else {
             //TODO call to apply step changing
         }
+
+        emit ProposalFinalized(proposalId, yes.add(no), proposal.agreed);
     }
 
     function addStep(uint256 stepId, string description, uint256 percentOfFunds, uint256 duration) external onlyOwner {
@@ -210,7 +210,7 @@ contract Stepable is Project {
             startStep(0);
         }
 
-        if(_state == States.Existence) {
+        if (_state == States.Existence) {
             vault.close();
         }
 

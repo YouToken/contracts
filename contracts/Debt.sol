@@ -1,4 +1,4 @@
-pragma solidity ^0.4.18;
+pragma solidity ^0.4.23;
 
 import './market/Stepable.sol';
 import './market/debt/DebtBucketOnce.sol';
@@ -11,7 +11,7 @@ contract Debt is Stepable {
 
     uint256 debtRewardPercent;
 
-    function Debt(
+    constructor(
         string _name,
         uint256 _rate,
         address _wallet,

@@ -1,4 +1,4 @@
-pragma solidity ^0.4.18;
+pragma solidity ^0.4.23;
 
 import 'zeppelin-solidity/contracts/token/ERC20/ERC20.sol';
 import 'zeppelin-solidity/contracts/ownership/Ownable.sol';
@@ -12,9 +12,9 @@ contract Bucket is Ownable {
     address[] holders;
     mapping(address => bool) public addedHolder;
 
-    ERC20 token;
+    ERC20 public token;
 
-    function Bucket(address _token) public {
+    constructor(address _token) public {
         token = ERC20(_token);
     }
 
@@ -23,7 +23,7 @@ contract Bucket is Ownable {
     }
 
     function refill() public payable {
-        Refill(msg.sender, msg.value);
+        emit Refill(msg.sender, msg.value);
     }
 
     function _isHolder(address holder) internal view returns (bool) {
@@ -47,7 +47,7 @@ contract Bucket is Ownable {
         holders.push(_beneficiary);
         addedHolder[_beneficiary] = true;
 
-        AddHolder(_beneficiary);
+        emit AddHolder(_beneficiary);
         return true;
     }
 

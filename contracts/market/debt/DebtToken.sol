@@ -1,4 +1,4 @@
-pragma solidity ^0.4.18;
+pragma solidity ^0.4.23;
 
 import 'zeppelin-solidity/contracts/token/ERC20/MintableToken.sol';
 
@@ -8,7 +8,7 @@ contract DebtToken is MintableToken {
 
     event Burn(address indexed burner, uint256 value);
 
-    function DebtToken(bool _allowTransfer) public {
+    constructor(bool _allowTransfer) public {
         allowTransfer = _allowTransfer;
     }
 

@@ -1,4 +1,4 @@
-pragma solidity ^0.4.18;
+pragma solidity ^0.4.23;
 
 import './IEventListener.sol';
 import 'zeppelin-solidity/contracts/token/ERC20/PausableToken.sol';

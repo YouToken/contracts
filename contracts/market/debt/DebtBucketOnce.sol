@@ -1,4 +1,4 @@
-pragma solidity ^0.4.18;
+pragma solidity ^0.4.23;
 
 import '../bucket/Bucket.sol';
 import 'zeppelin-solidity/contracts/math/SafeMath.sol';
@@ -9,12 +9,12 @@ contract DebtBucketOnce is Bucket {
     enum States {None, Filling, Rewarding}
     States public state;
 
-    mapping(address => uint256) holderBalances;
+    mapping(address => uint256) public holderBalances;
 
     bool public openFilling;
     uint256 public goal;
 
-    function DebtBucketOnce(address _token) public Bucket(_token) {
+    constructor(address _token) public Bucket(_token) {
     }
 
     function refill() public payable isFilling {
@@ -78,6 +78,6 @@ contract DebtBucketOnce is Bucket {
 
         holderBalances[holder] = 0;
         holder.transfer(holderBalance);
-        Reward(holder, holderBalance);
+        emit Reward(holder, holderBalance);
     }
 }

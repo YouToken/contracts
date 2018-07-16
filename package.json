@@ -2,7 +2,7 @@
   "name": "YTN",
   "version": "1.0.3",
   "scripts": {
-    "testrpc": "testrpc",
+    "testrpc": "ganache-cli",
     "dev": "truffle develop",
     "test": "truffle test",
     "postversion": "git push origin master && git push --tags"
@@ -13,7 +13,7 @@
   "dependencies": {
     "app-root-dir": "^1.0.2",
     "babel-polyfill": "^6.26.0",
-    "babel-preset-env": "^1.6.1",
+    "babel-preset-env": "^1.7.0",
     "babel-preset-es2015": "^6.24.1",
     "babel-preset-stage-2": "^6.24.1",
     "babel-register": "^6.26.0",
@@ -21,8 +21,9 @@
     "chai": "^4.1.2",
     "chai-as-promised": "^7.1.1",
     "chai-bignumber": "^2.0.2",
-    "testrpc": "0.0.1",
-    "web3": "^1.0.0-beta2",
-    "zeppelin-solidity": "^1.6.0"
+    "ganache-cli": "^6.1.6",
+    "lodash": "^4.17.10",
+    "truffle": "^4.1.13",
+    "zeppelin-solidity": "^1.10.0"
   }
 }

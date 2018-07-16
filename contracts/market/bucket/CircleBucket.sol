@@ -1,4 +1,4 @@
-pragma solidity ^0.4.18;
+pragma solidity ^0.4.23;
 
 import 'zeppelin-solidity/contracts/math/SafeMath.sol';
 import './Bucket.sol';
@@ -20,7 +20,7 @@ contract CircleBucket is Bucket {
 
     mapping(address => uint256) public roundBalances;
 
-    function CircleBucket(address _token, uint256 _roundDuration) public
+    constructor(address _token, uint256 _roundDuration) public
     Bucket(_token)
     {
         roundDuration = _roundDuration;
@@ -47,7 +47,7 @@ contract CircleBucket is Bucket {
         roundBalances[holder] = 0;
         holder.transfer(holderBalance);
         roundReward = roundReward.add(holderBalance);
-        Reward(holder, holderBalance);
+        emit Reward(holder, holderBalance);
     }
 
     function nextRound() external isStarted {

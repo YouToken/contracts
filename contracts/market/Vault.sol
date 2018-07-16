@@ -1,4 +1,4 @@
-pragma solidity ^0.4.18;
+pragma solidity ^0.4.23;
 
 import 'zeppelin-solidity/contracts/crowdsale/distribution/utils/RefundVault.sol';
 
@@ -10,7 +10,7 @@ contract Vault is RefundVault {
     uint256 constant hundred = 100;
     uint256 partOfFull = 100;
 
-    function Vault(address _wallet) public RefundVault(_wallet){
+    constructor(address _wallet) public RefundVault(_wallet){
     }
 
     function sendPercent(uint256 percent) public onlyOwner {

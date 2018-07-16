@@ -1,11 +1,11 @@
-pragma solidity ^0.4.18;
+pragma solidity ^0.4.23;
 
 import 'zeppelin-solidity/contracts/token/ERC20/ERC20.sol';
 import './market/Stepable.sol';
 
 contract Donation is Stepable {
 
-    function Donation(
+    constructor(
         string _name,
         uint256 _rate,
         address _wallet,

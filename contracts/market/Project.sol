@@ -1,4 +1,4 @@
-pragma solidity ^0.4.18;
+pragma solidity ^0.4.23;
 
 import 'zeppelin-solidity/contracts/crowdsale/validation/TimedCrowdsale.sol';
 import 'zeppelin-solidity/contracts/ownership/Ownable.sol';
@@ -9,12 +9,14 @@ interface iYTN_CN {
 }
 
 contract Project is Ownable, TimedCrowdsale {
+    string public version;
+
     enum States {Funding, Production, Existence, Refunding}
     States public state;
 
     event StateChanged(States previos, States current);
 
-    // minimum amount of funds to be raised in weis
+    // minimum amount of funds to be raised in wei
     uint256 public goal;
 
     string public name;
@@ -24,7 +26,7 @@ contract Project is Ownable, TimedCrowdsale {
 
     Vault vault;
 
-    function Project(string _name, address _wallet, uint256 _goal) public {
+    constructor(string _name, address _wallet, uint256 _goal) public {
         require(_goal > 0);
 
         name = _name;
@@ -77,12 +79,12 @@ contract Project is Ownable, TimedCrowdsale {
             vault.enableRefunds();
         }
 
-        StateChanged(state, _state);
+        emit StateChanged(state, _state);
         state = _state;
     }
 
     function _processPurchase(address _beneficiary, uint256 _tokenAmount) internal {
-        super._deliverTokens(_beneficiary, _tokenAmount);
+        _deliverTokens(_beneficiary, _tokenAmount);
         backersCount = backersCount.add(1);
         tokenSold = tokenSold.add(_tokenAmount);
     }

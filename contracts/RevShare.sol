@@ -1,4 +1,4 @@
-pragma solidity ^0.4.18;
+pragma solidity ^0.4.23;
 
 import './market/Stepable.sol';
 import './market/bucket/CircleBucket.sol';
@@ -8,7 +8,7 @@ contract RevShare is Stepable, IEventListener {
 
     CircleBucket public bucket;
 
-    function RevShare(
+    constructor(
         string _name,
         uint256 _rate,
         address _wallet,
