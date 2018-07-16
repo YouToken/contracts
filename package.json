@@ -1,6 +1,6 @@
 {
   "name": "YTN",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "scripts": {
     "testrpc": "ganache-cli",
     "dev": "truffle develop",
