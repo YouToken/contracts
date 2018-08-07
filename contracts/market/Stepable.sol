@@ -1,6 +1,7 @@
 pragma solidity ^0.4.23;
 
 import './Project.sol';
+//import '../token/IEventListener.sol';
 
 contract Stepable is Project {
 
@@ -35,8 +36,9 @@ contract Stepable is Project {
         bool executed;
         bool agreed;
 
-        Vote[] votes;
-        mapping(address => bool) voted;
+        uint256 votersCount;
+        int256 decision;
+        mapping(address => uint256) voted;
 
         uint256 stepId;
     }
@@ -46,7 +48,7 @@ contract Stepable is Project {
 
     event ProposalAdded(uint proposalId, uint proposalType, uint stepId);
     event Voted(uint proposalId, bool agree, address voter);
-    event ProposalFinalized(uint proposalId, uint quorum, bool aggreed);
+    event ProposalFinalized(uint proposalId, int256 quorum, bool aggreed);
 
     struct Vote {
         bool agreed;
@@ -70,10 +72,13 @@ contract Stepable is Project {
         _;
     }
 
-    function vote(uint256 proposalId, bool agreed) external isProduction onlyInvestor returns (uint256 voteId) {
+    function vote(uint256 proposalId, bool agreed) external isProduction onlyInvestor returns (uint256) {
         Proposal storage proposal = proposals[proposalId];
+        address voter = msg.sender;
+        uint256 amount = token.balanceOf(voter);
 
-        require(!proposal.voted[msg.sender]);
+        require(!proposal.executed && proposal.startTime >= block.timestamp);
+        require(proposal.voted[msg.sender] < amount);
 
         if (proposal.deadline < block.timestamp) {
             //auto close voting
@@ -81,18 +86,15 @@ contract Stepable is Project {
             return 0;
         }
 
-        address voter = msg.sender;
-        voteId = proposal.votes.length++;
-        proposal.votes[voteId] = Vote({agreed : agreed, voter : voter});
-        proposal.voted[voter] = true;
+        if (agreed) {
+            proposal.decision += int256(amount.sub(proposal.voted[msg.sender]));
+        } else {
+            proposal.decision -= int256(amount.sub(proposal.voted[msg.sender]));
+        }
 
         emit Voted(proposalId, agreed, voter);
 
-        return voteId;
-    }
-
-    function addProposal(uint256 stepId, uint proposalType) external returns (uint256) {
-        return _createProposal(stepId, proposalType);
+        return ++proposal.votersCount;
     }
 
     function _createProposal(uint256 stepId, uint proposalType) internal returns (uint256 proposalID) {
@@ -120,21 +122,8 @@ contract Stepable is Project {
         require(proposal.deadline < block.timestamp);
         require(!proposal.executed);
 
-        uint256 yes = 0;
-        uint256 no = 0;
-
-        for (uint i = 0; i < proposal.votes.length; i++) {
-            Vote storage vot = proposal.votes[i];
-            uint256 amount = token.balanceOf(vot.voter);
-            if (vot.agreed) {
-                yes = yes.add(amount);
-            } else {
-                no = no.add(amount);
-            }
-        }
-
         proposal.executed = true;
-        proposal.agreed = yes > no;
+        proposal.agreed = proposal.decision >= 0;
 
         if (proposal.proposalType == ProposalTypes.Confirm) {
             closeStep(proposal.stepId, proposal.agreed);
@@ -142,7 +131,7 @@ contract Stepable is Project {
             //TODO call to apply step changing
         }
 
-        emit ProposalFinalized(proposalId, yes.add(no), proposal.agreed);
+        emit ProposalFinalized(proposalId, proposal.decision, proposal.agreed);
     }
 
     function addStep(uint256 stepId, string description, uint256 percentOfFunds, uint256 duration) external onlyOwner {
@@ -215,5 +204,38 @@ contract Stepable is Project {
         }
 
         super.setState(_state);
+    }
+
+    function _onTokenTransfer(address _from, address _to, uint256 _value) internal {
+        require(msg.sender == address(token));
+        _updateProposalRatio(_from, _to, _value);
+    }
+
+    function onTokenApproval(address _from, address _to, uint256 _value) external {
+        //nope
+    }
+
+    function _updateProposalRatio(address _from, address _to, uint256 _value) internal {
+        if (proposalsLength == 0) {
+            return;
+        }
+
+        Proposal proposal = proposals[proposalsLength - 1];
+
+        if(proposal.executed) {
+            return;
+        }
+
+        if(proposal.voted[_from] == 0) {
+            return;
+        }
+
+        if(proposal.voted[_from] - _value > 0) {
+            proposal.voted[_from] -= _value;
+            proposal.voted[_to] += _value;
+        } else {
+            proposal.voted[_to] += proposal.voted[_from];
+            proposal.voted[_from] = 0;
+        }
     }
 }

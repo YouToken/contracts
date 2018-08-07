@@ -3,29 +3,32 @@ pragma solidity ^0.4.23;
 import 'zeppelin-solidity/contracts/ownership/Ownable.sol';
 import 'zeppelin-solidity/contracts/math/SafeMath.sol';
 
-import "./market/compiler/Creator.sol";
+import "./market/compiler/TokenOwner.sol";
 import "./market/compiler/IDebt.sol";
 import "./market/compiler/IDonation.sol";
 import "./market/compiler/IRevShare.sol";
 
 import "./YTN_cn.sol";
 
-contract Compiler is Creator, Ownable {
+contract Compiler is Ownable {
     using SafeMath for uint256;
 
     string public version = 'v1.0';
 
     uint256 public TOKEN_CAP = 10 ** 27;
-    uint256 public GEN_FEE = 1 ether;
+    uint256 public GEN_FEE = 0.3 ether;
 
+    TokenOwner tokenOwner;
     mapping(string => address) projectCompilers;
 
     event GenerateContract(address _creator, address _contract, string _type);
 
+    constructor(address _tokenOwner) public {
+        tokenOwner = TokenOwner(_tokenOwner);
+    }
+
     function changeVersion(address newCompiler) public onlyOwner {
-        for (uint256 i = 0; i < tokens.length; i++) {
-            Ownable(tokens[i]).transferOwnership(newCompiler);
-        }
+        tokenOwner.transferOwnership(newCompiler);
     }
 
     function setProjectCompiler(string _name, address _compilerAddress)
@@ -39,18 +42,20 @@ contract Compiler is Creator, Ownable {
         _;
     }
 
+    modifier onlyCreator() {
+        require(tokenOwner.creatorTokens(msg.sender) != 0);
+        _;
+    }
+
     function generateToken(string _name, string _symbol)
     validAmount
     payable public
-    returns (YTN_cn token)
+    returns (address token)
     {
         address creator = msg.sender;
-        require(creatorTokens[creator] == 0x0);
+        require(tokenOwner.creatorTokens(creator) == 0x0);
 
-        creators.push(creator);
-        token = new YTN_cn(_name, _symbol, TOKEN_CAP);
-        creatorTokens[creator] = address(token);
-        tokens.push(address(token));
+        token = tokenOwner.generateToken(creator, _name, _symbol, TOKEN_CAP);
 
         emit GenerateContract(creator, token, 'Token');
     }
@@ -69,27 +74,22 @@ contract Compiler is Creator, Ownable {
     payable public
     {
         address creator = msg.sender;
-        YTN_cn token = YTN_cn(creatorTokens[creator]);
+        address token = tokenOwner.creatorTokens(creator);
 
         address project = IDebt(projectCompilers['Debt']).generate(
             creator,
             token,
+            tokenOwner,
             _name,
             _rate,
             _wallet,
             _openingTime,
             _closingTime,
             _goal,
-            _debtRewardPercent,
-            _isDebtTokenTransfer
+            _debtRewardPercent
         );
 
-        addProject(project);
-
-        uint256 tokenMint = _goal.mul(_rate).mul(110).div(100);
-        //overhead 10% for last big payment
-        require(token.mint(project, tokenMint));
-
+        tokenOwner.addProject(creator, project);
         emit GenerateContract(creator, project, 'Debt');
     }
 
@@ -105,11 +105,12 @@ contract Compiler is Creator, Ownable {
     payable public
     {
         address creator = msg.sender;
-        YTN_cn token = YTN_cn(creatorTokens[creator]);
+        address token = tokenOwner.creatorTokens(creator);
 
         address project = IDonation(projectCompilers['Donation']).generate(
             creator,
             token,
+            address(tokenOwner),
             _name,
             _rate,
             _wallet,
@@ -118,13 +119,8 @@ contract Compiler is Creator, Ownable {
             _goal
         );
 
-        addProject(address(project));
-
-        uint256 tokenMint = _goal.mul(_rate).mul(110).div(100);
-        //overhead 10% for last big payment
-        require(token.mint(project, tokenMint));
-
-        emit GenerateContract(creator, address(project), 'Donation');
+        tokenOwner.addProject(creator, project);
+        emit GenerateContract(creator, project, 'Donation');
     }
 
     function generateRevShare(
@@ -140,11 +136,12 @@ contract Compiler is Creator, Ownable {
     payable public
     {
         address creator = msg.sender;
-        YTN_cn token = YTN_cn(creatorTokens[creator]);
+        address token = tokenOwner.creatorTokens(creator);
 
         address project = IRevShare(projectCompilers['RevShare']).generate(
             creator,
             token,
+            address(tokenOwner),
             _name,
             _rate,
             _wallet,
@@ -154,12 +151,7 @@ contract Compiler is Creator, Ownable {
             _roundDuration
         );
 
-        addProject(address(project));
-
-        uint256 tokenMint = _goal.mul(_rate).mul(110).div(100);
-        //overhead 10% for last big payment
-        require(token.mint(project, tokenMint));
-
-        emit GenerateContract(creator, address(project), 'RevShare');
+        tokenOwner.addProject(creator, project);
+        emit GenerateContract(creator, project, 'RevShare');
     }
 }

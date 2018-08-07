@@ -19,6 +19,7 @@ contract DonationCompiler is IDonation {
     function generate(
         address _owner,
         address _token,
+        address _tokenOwner,
         string _name,
         uint256 _rate,
         address _wallet,
@@ -35,6 +36,7 @@ contract DonationCompiler is IDonation {
             _rate,
             _wallet,
             ERC20(_token),
+            _tokenOwner,
             _openingTime,
             _closingTime,
             _goal

@@ -1,18 +1,18 @@
 pragma solidity ^0.4.23;
 
 import './market/Stepable.sol';
-import './market/bucket/CircleBucket.sol';
-import './token/IEventListener.sol';
+import './market/bucket/Reward.sol';
 
-contract RevShare is Stepable, IEventListener {
+contract RevShare is Stepable {
 
-    CircleBucket public bucket;
+    Reward public bucket;
 
     constructor(
         string _name,
         uint256 _rate,
         address _wallet,
         ERC20 _token,
+        address _tokenOwner,
         uint256 _openingTime,
         uint256 _closingTime,
         uint256 _goal,
@@ -20,8 +20,8 @@ contract RevShare is Stepable, IEventListener {
     ) public
     Crowdsale(_rate, _wallet, _token)
     TimedCrowdsale(_openingTime, _closingTime)
-    Project(_name, _wallet, _goal) {
-        bucket = new CircleBucket(token, _roundDuration);
+    Project(_name, _wallet, _goal, _tokenOwner) {
+        bucket = new Reward(token);
     }
 
     function setState(States _state) internal {
@@ -33,16 +33,12 @@ contract RevShare is Stepable, IEventListener {
     }
 
     function startExistence() internal {
-        bucket.startFirstRound();
+//        bucket.startFirstRound();
     }
 
     function onTokenTransfer(address _from, address _to, uint256 _value) external {
-        require(msg.sender == address(token));
-        bucket.addBeneficiary(_to);
-    }
-
-    function onTokenApproval(address _from, address _to, uint256 _value) external {
-        //nope
+        _onTokenTransfer(_from, _to, _value);
+        bucket.onTokenTransfer(_from, _to, _value);
     }
 
     function getReward() external {

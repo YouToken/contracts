@@ -65,9 +65,6 @@ interface Project {
 
     function vote(uint256 proposalId, bool agreed) external isProduction onlyInvestor returns (uint256 voteId);
 
-    //emit ProposalAdded
-    function addProposal(uint256 stepId, uint proposalType) external returns (uint256);
-
     //if executed emit ProposalFinalized
     function executeProposal(uint256 proposalId) external isProduction;
 

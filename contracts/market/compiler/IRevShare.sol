@@ -4,6 +4,7 @@ interface IRevShare {
     function generate(
         address _owner,
         address _token,
+        address _tokenOwner,
         string _name,
         uint256 _rate,
         address _wallet,

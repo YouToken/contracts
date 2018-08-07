@@ -19,6 +19,7 @@ contract RevShareCompiler is IRevShare {
     function generate(
         address _owner,
         address _token,
+        address _tokenOwner,
         string _name,
         uint256 _rate,
         address _wallet,
@@ -36,6 +37,7 @@ contract RevShareCompiler is IRevShare {
             _rate,
             _wallet,
             ERC20(_token),
+            _tokenOwner,
             _openingTime,
             _closingTime,
             _goal,

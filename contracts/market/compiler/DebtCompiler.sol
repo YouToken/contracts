@@ -19,14 +19,14 @@ contract DebtCompiler is IDebt {
     function generate(
         address _owner,
         address _token,
+        address _tokenOwner,
         string _name,
         uint256 _rate,
         address _wallet,
         uint256 _openingTime,
         uint256 _closingTime,
         uint256 _goal,
-        uint256 _debtRewardPercent,
-        bool _isDebtTokenTransfer
+        uint256 _debtRewardPercent
     )
     onlyRoot
     external
@@ -37,11 +37,11 @@ contract DebtCompiler is IDebt {
             _rate,
             _wallet,
             ERC20(_token),
+            _tokenOwner,
             _openingTime,
             _closingTime,
             _goal,
-            _debtRewardPercent,
-            _isDebtTokenTransfer
+            _debtRewardPercent
         );
 
         project.transferOwnership(_owner);

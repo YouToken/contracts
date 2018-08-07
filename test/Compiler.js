@@ -10,6 +10,7 @@ require('chai')
   .use(require('chai-bignumber')(web3.BigNumber))
   .should();
 
+const TokenOwner = artifacts.require('TokenOwner')
 const Compiler = artifacts.require('Compiler')
 const DebtCompiler = artifacts.require('DebtCompiler')
 const DonationCompiler = artifacts.require('DonationCompiler')
@@ -28,7 +29,11 @@ contract('Compiler', accounts => {
   it('gen Compiler', async function () {
     await advanceBlock()
 
-    this.compiler = await Compiler.new()
+    this.tokenOwner = await TokenOwner.new()
+
+    this.compiler = await Compiler.new(this.tokenOwner.address)
+
+    this.tokenOwner.transferOwnership(this.compiler.address)
 
     this.debtCompiler = await DebtCompiler.new(this.compiler.address)
     this.compiler.setProjectCompiler('Debt', this.debtCompiler.address)
@@ -63,7 +68,6 @@ contract('Compiler', accounts => {
       , {value: ether(1), from: creator})
 
     let {args: {_contract}} = _.find(logs, {address: this.compiler.address, event: 'GenerateContract'})
-    Goal.mul(Rate).mul(110).div(100).should.bignumber.equal(await this.token.balanceOf.call(_contract))
     creator.should.equal(await Ownable.at(_contract).owner.call())
   })
 
@@ -81,7 +85,6 @@ contract('Compiler', accounts => {
       , {value: ether(1), from: creator})
 
     let {args: {_contract}} = _.find(logs, {address: this.compiler.address, event: 'GenerateContract'})
-    Goal.mul(Rate).mul(110).div(100).should.bignumber.equal(await this.token.balanceOf.call(_contract))
     creator.should.equal(await Ownable.at(_contract).owner.call())
   })
 
@@ -100,7 +103,6 @@ contract('Compiler', accounts => {
       , {value: ether(1), from: creator})
 
     let {args: {_contract}} = _.find(logs, {address: this.compiler.address, event: 'GenerateContract'})
-    Goal.mul(Rate).mul(110).div(100).should.bignumber.equal(await this.token.balanceOf.call(_contract))
     creator.should.equal(await Ownable.at(_contract).owner.call())
   })
 })

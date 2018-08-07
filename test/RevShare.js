@@ -12,7 +12,7 @@ require('chai')
 
 const RevShare = artifacts.require('RevShare')
 const YTN_cn = artifacts.require('YTN_cn')
-const Bucket = artifacts.require('CircleBucket')
+const Bucket = artifacts.require('Reward')
 
 contract('RevShare', accounts => {
   const TokenCap = 10 ** 27
@@ -23,7 +23,6 @@ contract('RevShare', accounts => {
   let StartTime, EndTime
 
   before(async function () {
-    // Advance to the next block to correctly read time in the solidity "now" function interpreted by testrpc
     await advanceBlock()
     StartTime = latestTime() + 100
     EndTime = StartTime + duration.days(30)
@@ -34,16 +33,12 @@ contract('RevShare', accounts => {
       Rate,
       accounts[0],
       this.token.address,
+      this.token.address,
       StartTime,
       EndTime,
       Goal,
       duration.weeks(4))
-    await this.token.addListener(this.project.address)
-    await this.token.mint(this.project.address, Goal.mul(Rate).mul(1.1))
-  })
-
-  beforeEach(async function () {
-
+    await this.token.transferOwnership(this.project.address)
   })
 
   describe('Funding', async function () {
@@ -52,7 +47,7 @@ contract('RevShare', accounts => {
       const amount = ether(0.1)
       await increaseTimeTo(StartTime)
       await this.project.buyTokens(investor1, {value: amount})
-      let balance = await this.token.balanceOf(investor1)
+      let balance = await this.project.balances.call(investor1)
       balance.should.be.bignumber.equal(BigNumber(Rate).mul(amount))
     })
 
@@ -83,6 +78,20 @@ contract('RevShare', accounts => {
       await this.project.executeProposal(id).should.be.fulfilled
       return await this.project.currentStepId.call()
     }
+
+    it('getTokens', async function () {
+      let b1 = await this.project.balances.call(investor1)
+      let b2 = await this.project.balances.call(investor2)
+
+      await this.project.withdrawTokens({from: investor1})
+      await this.project.withdrawTokens({from: investor2})
+
+      let bb1 = await this.token.balanceOf.call(investor1)
+      let bb2 = await this.token.balanceOf.call(investor2)
+
+      bb1.should.be.bignumber.equal(b1)
+      bb2.should.be.bignumber.equal(b2)
+    })
 
     it('voting', async function () {
       await voting.call(this, 0)
@@ -116,7 +125,6 @@ contract('RevShare', accounts => {
 
     before(async function () {
       this.bucket = await Bucket.at(await this.project.bucket.call())
-      this.roundDuration = await this.bucket.roundDuration.call()
     })
 
     it('fill bucket', async function () {
@@ -125,17 +133,10 @@ contract('RevShare', accounts => {
       balance.should.bignumber.equal(filling)
     })
 
-    it('start next round and reward from current', async function () {
-      await this.bucket.nextRound().should.be.rejected
-      await increaseTimeTo(latestTime() + this.roundDuration.toNumber() + 100)
-      await this.bucket.nextRound()
-
+    it('get reward', async function () {
       let balance = web3.eth.getBalance(investor2)
       await this.project.getReward({from: investor2})
       web3.fromWei(web3.eth.getBalance(investor2).sub(balance)).should.bignumber.gt(0)
-
-      let rewardBalance = await this.bucket.roundBalances.call(investor2)
-      rewardBalance.should.bignumber.equal(0)
     })
   })
 

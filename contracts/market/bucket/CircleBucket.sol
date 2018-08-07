@@ -6,6 +6,9 @@ import './Bucket.sol';
 contract CircleBucket is Bucket {
     using SafeMath for uint256;
 
+    mapping(address => uint256) internal payoutsTo_;
+    uint256 internal profitPerShare_;
+
     event NewRewardRound(uint256 balance);
 
     uint256 public roundDuration;//in sec
@@ -27,8 +30,8 @@ contract CircleBucket is Bucket {
     }
 
     function startFirstRound() external onlyOwner {
-        roundStartTime = now;
         started = true;
+        _nextRound();
     }
 
     modifier isStarted() {
@@ -52,7 +55,10 @@ contract CircleBucket is Bucket {
 
     function nextRound() external isStarted {
         require(now.sub(roundStartTime) >= roundDuration);
+        _nextRound();
+    }
 
+    function _nextRound() internal {
         uint256 totalSupply = token.totalSupply();
         roundBalance = this.balance;
 

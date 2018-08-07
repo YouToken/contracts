@@ -25,7 +25,6 @@ contract('Debt', accounts => {
   let StartTime, EndTime
 
   before(async function () {
-    // Advance to the next block to correctly read time in the solidity "now" function interpreted by testrpc
     await advanceBlock()
     StartTime = latestTime() + 100
     EndTime = StartTime + duration.days(30)
@@ -36,13 +35,13 @@ contract('Debt', accounts => {
       Rate,
       accounts[0],
       this.token.address,
+      this.token.address,
       StartTime,
       EndTime,
       Goal,
-      DebtRewardPercent,
-      false
-      )
-    await this.token.mint(this.project.address, Goal.mul(Rate).mul(1.1))
+      DebtRewardPercent
+    )
+    await this.token.transferOwnership(this.project.address)
   })
 
   describe('Funding', async function () {
@@ -51,7 +50,7 @@ contract('Debt', accounts => {
       const amount = ether(0.1)
       await increaseTimeTo(StartTime)
       await this.project.buyTokens(investor1, {value: amount})
-      let balance = await this.token.balanceOf(investor1)
+      let balance = await this.project.balances.call(investor1)
       balance.should.be.bignumber.equal(BigNumber(Rate).mul(amount))
     })
 
@@ -82,6 +81,20 @@ contract('Debt', accounts => {
       await this.project.executeProposal(id).should.be.fulfilled
       return await this.project.currentStepId.call()
     }
+
+    it('getTokens', async function () {
+      let b1 = await this.project.balances.call(investor1)
+      let b2 = await this.project.balances.call(investor2)
+
+      await this.project.withdrawTokens({from: investor1})
+      await this.project.withdrawTokens({from: investor2})
+
+      let bb1 = await this.token.balanceOf.call(investor1)
+      let bb2 = await this.token.balanceOf.call(investor2)
+
+      bb1.should.be.bignumber.equal(b1)
+      bb2.should.be.bignumber.equal(b2)
+    })
 
     it('voting', async function () {
       await voting.call(this, 0)
@@ -125,11 +138,9 @@ contract('Debt', accounts => {
     })
 
     it('get rewards', async function () {
-      let weiRaised = await this.project.weiRaised.call()
-      await this.bucket.sendTransaction({value: weiRaised.mul(DebtRewardPercent).div(100)})
+      let balance = web3.eth.getBalance(investor2)
       await this.project.getReward({from: investor2})
-      let debtTokenBalance = await this.debtToken.balanceOf.call(investor2)
-      debtTokenBalance.should.bignumber.equal(0)
+      web3.eth.getBalance(investor2).should.bignumber.gt(balance)
     })
   })
 

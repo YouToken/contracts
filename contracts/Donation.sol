@@ -10,13 +10,14 @@ contract Donation is Stepable {
         uint256 _rate,
         address _wallet,
         ERC20 _token,
+        address _tokenOwner,
         uint256 _openingTime,
         uint256 _closingTime,
         uint256 _goal
     ) public
     Crowdsale(_rate, _wallet, _token)
     TimedCrowdsale(_openingTime, _closingTime)
-    Project(_name, _wallet, _goal)
+    Project(_name, _wallet, _goal, _tokenOwner)
     {
     }
 }
