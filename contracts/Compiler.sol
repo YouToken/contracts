@@ -18,13 +18,16 @@ contract Compiler is Ownable {
     uint256 public TOKEN_CAP = 10 ** 27;
     uint256 public GEN_FEE = 0.3 ether;
 
+    address public bucket;
+
     TokenOwner tokenOwner;
     mapping(string => address) projectCompilers;
 
     event GenerateContract(address _creator, address _contract, string _type);
 
-    constructor(address _tokenOwner) public {
+    constructor(address _tokenOwner, address _bucket) public {
         tokenOwner = TokenOwner(_tokenOwner);
+        bucket = _bucket;
     }
 
     function changeVersion(address newCompiler) public onlyOwner {
@@ -47,6 +50,14 @@ contract Compiler is Ownable {
         _;
     }
 
+    function setBucket(address _bucket) public onlyOwner {
+        bucket = _bucket;
+    }
+
+    function _forwardFunds() internal {
+        bucket.transfer(msg.value);
+    }
+
     function generateToken(string _name, string _symbol)
     validAmount
     payable public
@@ -58,6 +69,7 @@ contract Compiler is Ownable {
         token = tokenOwner.generateToken(creator, _name, _symbol, TOKEN_CAP);
 
         emit GenerateContract(creator, token, 'Token');
+        _forwardFunds();
     }
 
     function generateDebt(
@@ -91,6 +103,7 @@ contract Compiler is Ownable {
 
         tokenOwner.addProject(creator, project);
         emit GenerateContract(creator, project, 'Debt');
+        _forwardFunds();
     }
 
     function generateDonation(
@@ -121,6 +134,7 @@ contract Compiler is Ownable {
 
         tokenOwner.addProject(creator, project);
         emit GenerateContract(creator, project, 'Donation');
+        _forwardFunds();
     }
 
     function generateRevShare(
@@ -153,5 +167,6 @@ contract Compiler is Ownable {
 
         tokenOwner.addProject(creator, project);
         emit GenerateContract(creator, project, 'RevShare');
+        _forwardFunds();
     }
 }

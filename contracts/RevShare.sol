@@ -24,18 +24,6 @@ contract RevShare is Stepable {
         bucket = new Reward(token);
     }
 
-    function setState(States _state) internal {
-        if (_state == States.Existence) {
-            startExistence();
-        }
-
-        super.setState(_state);
-    }
-
-    function startExistence() internal {
-//        bucket.startFirstRound();
-    }
-
     function onTokenTransfer(address _from, address _to, uint256 _value) external {
         _onTokenTransfer(_from, _to, _value);
         bucket.onTokenTransfer(_from, _to, _value);
