@@ -22,7 +22,7 @@
     "chai-as-promised": "^7.1.1",
     "chai-bignumber": "^2.0.2",
     "ganache-cli": "^6.1.6",
-    "lodash": "^4.17.10",
+    "lodash": "^4.17.11",
     "truffle": "^4.1.13",
     "zeppelin-solidity": "^1.10.0"
   }
